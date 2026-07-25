@@ -159,6 +159,25 @@ firmware is **older than 6.5.0**. Latest is 6.5.2 C (2026-04-13).
 The headless and retail changelogs are byte-identical, so retail release notes
 can be used to date headless builds by which features are present.
 
+### Launching from EmulationStation
+
+ArkOS lists Ports from `*.sh` found in `/roms/ports/`. The jasonporritt package
+puts everything inside `/roms/ports/M8/`, leaving **no script at the top level**,
+so nothing shows in the menu — which is why launching previously meant stopping
+ES over SSH.
+
+Fix: `ports/M8.sh` → `/roms/ports/M8.sh`, a one-line entry point that `exec`s
+the real launcher. Verified through the exact path ES uses,
+`/usr/local/bin/AltSDL.sh /roms/ports/M8.sh` — m8c starts, takes DRM master, and
+reports firmware 6.5.2.
+
+`AltSDL.sh` simply runs `"$@"`, optionally with an `LD_PRELOAD` alternate SDL if
+`~/.config/.DEFAULT_PORTS_SDL` exists. It does not on this unit.
+
+Also removed **149 macOS AppleDouble files** (`._*`) from `/roms/ports`, left
+behind by copying to the card from a Mac. Many were `._*.sh`, which match ES's
+`.sh` filter and would have appeared as junk menu entries.
+
 ### Running it over SSH for testing
 
 m8c needs DRM master and EmulationStation holds it, so a remote test means

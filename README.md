@@ -75,6 +75,7 @@ M8C_REF=v1.7.9 ./setup/build_m8c.sh
 ## Layout
 
 ```
+ports/M8.sh            → /roms/ports/M8.sh — the EmulationStation menu entry
 samples/               synthesised test samples for the M8's sampler
 scripts/make-test-samples.py  regenerates them
 scripts/fetch-deps.sh  pins and downloads the .deb dependencies (run on the Mac)
