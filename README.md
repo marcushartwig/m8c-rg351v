@@ -75,6 +75,8 @@ M8C_REF=v1.7.9 ./setup/build_m8c.sh
 ## Layout
 
 ```
+samples/               synthesised test samples for the M8's sampler
+scripts/make-test-samples.py  regenerates them
 scripts/fetch-deps.sh  pins and downloads the .deb dependencies (run on the Mac)
 vendor/                fetched .debs, gitignored
 ports/M8/              → /roms/ports/M8 on the device
