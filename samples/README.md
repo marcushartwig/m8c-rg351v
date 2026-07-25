@@ -27,19 +27,31 @@ so they neither click on trigger nor at a loop point.
 
 ## Getting them onto the M8
 
-The microSD **has to come out of the Teensy**. The M8 Headless exposes only CDC
-serial and USB audio — no mass storage — so nothing can write to that card over
-the USB link, and m8c is a display/input client with no file transfer. Dirtywave's
-own docs say the same: close the display client, unplug the Teensy, remove the
-card.
+Use **USB drive mode**. From the M8's **Project view** there is a `USB_DRIVE`
+option — per the operation manual (v6.5.2), it "Puts M8 into USB drive-mode to
+allow transferring of SD card". The M8 re-enumerates as USB mass storage, and the
+card mounts on whatever host it is plugged into.
 
-1. Power down, take the microSD out of the Teensy 4.1
-2. Mount it on the Mac (FAT32)
-3. Copy these into `/Samples` on the card — a subdirectory such as
-   `/Samples/TEST` is fine, keeping the full path under 127 characters
-4. Reinsert, reconnect, relaunch m8c
+Since the Teensy is plugged into the RG351V, the card appears *there*, so the
+samples can be copied across locally. A staged copy lives at
+`/roms/ports/M8/testsamples/` on the device.
 
-Copying them to the RG351V's own SD card does nothing — the M8 never reads it.
+1. In m8c, go to the Project view and select `USB_DRIVE`
+2. The serial link drops as the device re-enumerates, so m8c will disconnect —
+   this is expected
+3. On the RG351V the card shows up as `/dev/sd*`; mount it and copy the WAVs
+   into `/Samples` (a subdirectory like `/Samples/TEST` is fine, keeping the
+   full path under 127 characters)
+4. Unmount, take the M8 out of drive mode, relaunch m8c
+
+Copying them to the RG351V's *own* SD card does nothing — the M8 never reads it.
+They have to land on the card inside the Teensy.
+
+> Earlier revisions of this file claimed the microSD had to be physically
+> removed, based on Dirtywave's headless setup doc and on a USB descriptor dump
+> showing only CDC + audio interfaces. Both were misleading: the descriptors show
+> no mass-storage interface because the M8 only presents one *while in drive
+> mode*. Physically removing the card still works, but is not required.
 
 ## Regenerating
 
