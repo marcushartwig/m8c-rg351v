@@ -126,9 +126,36 @@ Installed to `/roms/ports/M8/_m8c/m8c`, replacing a Nov 2022 build (55616 bytes,
 roughly v1.4 era). Previous binary preserved as `m8c.bak-2022`.
 `gamecontrollerdb.txt` also refreshed (261 KB → 507 KB).
 
-**Still untested: actual rendering.** m8c needs DRM master, which
-EmulationStation holds, so it cannot be verified over SSH — it has to be
-launched from the Ports menu on the device.
+### Confirmed working on hardware
+
+Display, audio and controls all verified working by the user on 2026-07-25.
+Phase 1 is done.
+
+**`ERROR: Could not lock GBM surface front buffer` is benign.** It appears once
+at startup on the KMSDRM/GBM path and rendering is fine afterwards. Do not chase
+it, and do not "fix" it by setting `use_gpu=false` — the GPU path works.
+
+One real limitation: SDL 2.0.10 on this device does not recognise EVDEV
+keycodes 309/310 (`BTN_TL2`/`BTN_TR2`, i.e. L2/R2), logging "The key you just
+pressed is not recognized by SDL" for each press. Everything else maps. If a
+binding on L2/R2 is ever needed, that is where to look.
+
+### Running it over SSH for testing
+
+m8c needs DRM master and EmulationStation holds it, so a remote test means
+taking the display and giving it back. `emulationstation.service` is `enabled`,
+so a reboot always restores the UI if something goes wrong.
+
+```sh
+sudo systemctl stop emulationstation
+cd /roms/ports/M8 && setsid nohup ./M8.sh > /tmp/m8c.log 2>&1 < /dev/null &
+# ... test ...
+pkill m8c; pkill alsaloop
+sudo systemctl start emulationstation
+```
+
+Normal use does not need any of this — launch **M8** from the Ports menu, which
+handles the handover itself.
 
 ### Cross-compiling: no longer needed
 

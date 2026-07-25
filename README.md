@@ -11,11 +11,9 @@ display, so the image is pixel-perfect with no filtering.
 
 ## Status
 
-Phase 1 (m8c **v1.7.10**, SDL2, built on-device) — **built and installed on
-hardware 2026-07-25.** Compiles in ~10s on the device; the binary finds the M8
-on `/dev/ttyACM0` and opens the port. Rendering is still unverified — that needs
-launching from the Ports menu, since m8c requires DRM master and
-EmulationStation holds it over SSH.
+Phase 1 (m8c **v1.7.10**, SDL2, built on-device) — **done and confirmed working
+on hardware 2026-07-25.** Display, audio and controls all verified. Compiles in
+~10s on the device, replacing a Nov 2022 binary (~v1.4 era).
 
 Phase 2 (m8c **v2.2.4** with bundled SDL3) — not started, and harder here than
 on ROCKNIX: the aarch64 SDL2 is stock eoan 2.0.10, so SDL3 would have to be
