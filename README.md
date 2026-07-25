@@ -90,6 +90,17 @@ docs/plan.md           the plan, the dead-archive problem, the SDL2→SDL3 probl
 docs/test-plan.md      run this on the device, in order
 ```
 
+## Licence
+
+The work in this repository — the scripts, configs, documentation and the
+synthesised samples — is **MIT**, see [LICENSE](LICENSE).
+
+That does **not** extend to `prebuilt/`, which redistributes a compiled m8c and
+its controller database. Those carry their own terms, reproduced verbatim in
+[prebuilt/LICENSE-m8c.txt](prebuilt/LICENSE-m8c.txt): MIT for m8c itself,
+CC-BY-SA 3.0 for the embedded font, zlib for the SDL controller database, plus
+several other MIT and public-domain components.
+
 ## Credits
 
 - [laamaa/m8c](https://github.com/laamaa/m8c) — the client this packages, MIT.
