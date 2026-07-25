@@ -39,6 +39,25 @@ The device also keeps the original Nov 2022 binary it replaced, at
 `ports/M8/setup/build_m8c.sh` clones upstream, checks out `M8C_REF` (default
 `v1.7.10`) and builds. Takes about ten seconds on the device.
 
+## Licensing
+
+`m8c-v1.7.10-aarch64-arkos` is compiled from [laamaa/m8c](https://github.com/laamaa/m8c),
+and `gamecontrollerdb.txt` ships with it. Upstream's licence document is
+included verbatim as [`LICENSE-m8c.txt`](LICENSE-m8c.txt) — it is the notice
+required for redistributing this binary, and covers every component baked into
+it:
+
+- **m8c** — MIT, © 2021 Jonne Kokkonen
+- **slip.c / slip.h** — MIT, © 2018 Marcin Borowicz
+- **ini.c / ini.h** — MIT, rxi
+- **inline font** — rendered from Trash80's *stealth57*, CC-BY-SA 3.0
+- **SDL_inprint, libserialport examples** — public domain
+- **SDL Game Controller Database** — zlib licence, © 1997-2022 Sam Lantinga
+
+Nothing here is our work except the build itself. If you want the binary from a
+trusted source rather than this archive, build it with
+`ports/M8/setup/build_m8c.sh`, which clones upstream directly.
+
 ## Known limitation
 
 This build detects the M8 by USB id `0x16C0:0x048A` only. Firmware 6.5.0's
