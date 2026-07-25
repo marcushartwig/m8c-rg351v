@@ -11,8 +11,12 @@ IDLE_MS="${IDLE_MS:-25}"
 here=$(cd "$(dirname "$0")" && pwd)
 cd "$here"
 
-# m8c writes its config on first run; only patch it if it already exists.
+# Seed our tuned config on first run, then keep the user's copy authoritative.
 config="$HOME/.local/share/m8c/config.ini"
+if [ ! -f "$config" ] && [ -f "$here/config.ini" ]; then
+  mkdir -p "$(dirname "$config")"
+  cp "$here/config.ini" "$config"
+fi
 [ -f "$config" ] && sed -i "/^idle_ms=/s/=.*/=$IDLE_MS/" "$config"
 
 echo "$GOVERNOR" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null

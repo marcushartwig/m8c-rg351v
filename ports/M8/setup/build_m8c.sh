@@ -12,6 +12,10 @@ log() { echo -e "\e[32m$*\e[0m"; }
 for tool in git make pkg-config gcc; do
   command -v "$tool" >/dev/null || { echo "Missing $tool - run install_build_tools.sh first"; exit 1; }
 done
+
+# install_build_tools.sh stages headers and .pc files under /usr/local.
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}
+
 pkg-config --exists sdl2 || { echo "sdl2 dev headers missing - run install_build_tools.sh"; exit 1; }
 pkg-config --exists libserialport || { echo "libserialport dev headers missing"; exit 1; }
 

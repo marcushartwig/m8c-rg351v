@@ -25,19 +25,37 @@ never have an SDL3 package.
 - USB-C to USB-A adapter for the RG351V's OTG port
 - Network on the device for the one-time setup (not needed to run m8c)
 
+## Heads-up: ArkOS's package archive no longer exists
+
+Ubuntu 19.10 ARM packages have been removed from `ports.ubuntu.com` **and** from
+`old-releases.ubuntu.com` (which carries no `ubuntu-ports` tree at all). Verified
+2026-07-25. So `apt-get install` cannot work on a stock ArkOS image, which breaks
+the setup scripts in every existing RG351V m8c guide, including ArkOS's own.
+
+The workaround here: **Launchpad still serves the individual `.deb`s** despite
+marking them `Obsolete`. `scripts/fetch-deps.sh` pins four packages with sha256
+verification, and `install_build_tools.sh` extracts them into `/usr/local`
+instead of going through apt. Details in [docs/plan.md](docs/plan.md).
+
 ## Install
 
-1. Copy `ports/M8` to `/roms/ports/M8` on the device's SD card.
-2. Boot the device. The scripts appear under **Ports**.
-3. Run `setup/setup.sh` — installs `libserialport0` and adds you to `dialout`.
-4. **Reboot**, so the group change takes effect.
-5. Run `setup/install_build_tools.sh`, then `setup/build_m8c.sh` to compile the
-   binary into `ports/M8/m8c/`.
+1. On the Mac: `./scripts/fetch-deps.sh` — downloads the pinned dependencies
+   into `vendor/`.
+2. Copy `ports/M8` **and** `vendor/` to the device's SD card.
+3. Boot the device. The scripts appear under **Ports**.
+4. Run `setup/setup.sh` — adds you to `dialout`. Then **reboot**.
+5. Run `setup/install_build_tools.sh`, then `setup/build_m8c.sh`.
 6. Launch with `M8.sh`.
+
+Work through [docs/test-plan.md](docs/test-plan.md) as you go — step 3 checks
+whether the device has a compiler at all, which decides whether this on-device
+route works or we cross-compile on the Mac instead.
 
 Building on-device is deliberate for phase 1: ArkOS ships **SDL2 2.28.2** with
 the RK3326 Mali/KMSDRM backends already configured, and linking against that is
-far more reliable than cross-building against a generic SDL2.
+far more reliable than cross-building against a generic SDL2. We use eoan's
+2.0.10 headers only — safe, and verified symbol-by-symbol in
+[docs/plan.md](docs/plan.md).
 
 To build a different m8c revision:
 
@@ -48,12 +66,16 @@ M8C_REF=v1.7.9 ./setup/build_m8c.sh
 ## Layout
 
 ```
-ports/M8/          → /roms/ports/M8 on the device
-  M8.sh              launcher: audio routing, cpu governor, run m8c
-  m8c/               built binary lands here
-  setup/             one-time setup and on-device build scripts
-build/             phase 2: containerised SDL3 cross-build (not yet written)
-docs/plan.md       the plan, and the SDL2→SDL3 problem
+scripts/fetch-deps.sh  pins and downloads the .deb dependencies (run on the Mac)
+vendor/                fetched .debs, gitignored
+ports/M8/              → /roms/ports/M8 on the device
+  M8.sh                  launcher: config seeding, audio routing, governor
+  config.ini             tuned m8c config for the RG351V (untested)
+  m8c/                   built binary lands here
+  setup/                 setup and on-device build scripts
+build/                 phase 2: containerised SDL3 cross-build (not yet written)
+docs/plan.md           the plan, the dead-archive problem, the SDL2→SDL3 problem
+docs/test-plan.md      run this on the device, in order
 ```
 
 ## Credits

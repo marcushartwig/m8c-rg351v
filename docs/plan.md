@@ -26,6 +26,63 @@ Two things make that easier than it sounds:
 Upstream publishes **no ARM Linux binaries** (v2.2.3 assets are x86_64 AppImage,
 macOS, Windows only), so there is nothing to shortcut with.
 
+## The apt archive is gone (verified 2026-07-25)
+
+ArkOS was archived 2025-12-30. More consequentially for us, **Ubuntu 19.10 ARM
+packages no longer exist on any official mirror**:
+
+| URL | result |
+| --- | --- |
+| `ports.ubuntu.com/ubuntu-ports/dists/eoan/Release` | 404 |
+| `old-releases.ubuntu.com/ubuntu-ports/...` | 404 — no `ubuntu-ports` tree at all |
+| `old-releases.ubuntu.com/` | only `releases/` and `ubuntu/` (x86) |
+
+So `apt-get install libsdl2-dev libserialport-dev` cannot work on a stock ArkOS
+image today. This breaks jasonporritt's `_setup_build_tools.sh`, ArkOS's own
+`Headers/install_headers.sh` (which does `apt -t eoan install`), and the
+`old-releases` repoint originally written here.
+
+**Rescue: Launchpad still serves the individual binaries.** They are marked
+`Obsolete`, but the files download fine from
+`launchpad.net/ubuntu/+archive/primary/+files/`. `scripts/fetch-deps.sh` pins
+four packages with sha256 verification:
+
+```
+libserialport0      0.1.1-3
+libserialport-dev   0.1.1-3
+libsdl2-2.0-0       2.0.10+dfsg1-1ubuntu1
+libsdl2-dev         2.0.10+dfsg1-1ubuntu1
+```
+
+`install_build_tools.sh` extracts these into `/usr/local` with `dpkg-deb -x`
+rather than `dpkg -i`, because dpkg would demand a dependency chain we cannot
+resolve.
+
+### Why 2.0.10 headers against a 2.28.2 runtime is safe
+
+We install eoan's SDL2 **headers** but deliberately do *not* install its runtime
+— ArkOS ships SDL2 2.28.2 built for the RK3326 display stack, and that is what
+we link against. SDL2 guarantees forward ABI compatibility, so this works
+provided m8c uses no symbol newer than 2.0.10.
+
+Verified rather than assumed: extracting every `SDL_*` identifier m8c v1.7.10
+references (192 of them) and diffing against every identifier declared in the
+2.0.10 headers (2277) leaves exactly three, all benign:
+
+- `SDL_inprint` — a comment referencing the upstream bitmap-font project
+- `SDL_AndroidSendMessage` — inside `#ifdef __ANDROID__` (`render.c:210`)
+- `SDL_strtokr` — in `usb.c`, whose entire body is `#ifdef USE_LIBUSB`
+  (lines 6–363), never defined in the default libserialport build
+
+### The remaining unknown: is there a compiler on the device?
+
+`gcc` cannot be apt-installed either, and hand-resolving build-essential's
+dependency chain from Launchpad is not worth it. If ArkOS does not already ship
+one, phase 1 moves to a **cross-build on the Mac** — Debian Buster arm64
+(glibc 2.28 < the device's 2.30) in Apple's `container`, running natively on the
+M1, using the same vendored headers. This is step 3 of
+[test-plan.md](test-plan.md).
+
 ## Phase 1 — v1.7.10, built on-device
 
 Proves the whole chain: USB serial to the Teensy, audio routing, gamepad

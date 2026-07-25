@@ -9,3 +9,6 @@ dist/
 *.zip
 
 .DS_Store
+
+# Vendored .debs (fetched by scripts/fetch-deps.sh)
+vendor/
