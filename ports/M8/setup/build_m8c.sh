@@ -4,6 +4,12 @@
 set -eu
 
 M8C_REF="${M8C_REF:-v1.7.10}"
+
+# The commit v1.7.10 pointed at when this was written. Upstream uses a
+# lightweight tag, which can be moved or recreated, so a tag name alone is not a
+# reproducible pin - verify what we actually got. Only checked for the default
+# ref; overriding M8C_REF skips it.
+M8C_COMMIT="3b59f68a2a9a66129567872251dee58b6cbbf131"
 here=$(cd "$(dirname "$0")/.." && pwd)
 src="$here/.src/m8c"
 
@@ -26,9 +32,21 @@ if [ ! -d "$src/.git" ]; then
 fi
 
 log "Checking out $M8C_REF ..."
-git -C "$src" fetch --tags --quiet
+git -C "$src" fetch --tags --force --quiet
 git -C "$src" checkout --quiet "$M8C_REF"
 git -C "$src" clean -qfdx
+
+got=$(git -C "$src" rev-parse HEAD)
+if [ "$M8C_REF" = "v1.7.10" ] && [ "$got" != "$M8C_COMMIT" ]; then
+  echo "" >&2
+  echo "REFUSING TO BUILD: v1.7.10 resolved to an unexpected commit." >&2
+  echo "  expected $M8C_COMMIT" >&2
+  echo "  got      $got" >&2
+  echo "The upstream tag has moved since this was pinned. Review the changes" >&2
+  echo "before trusting the result, then update M8C_COMMIT if it is legitimate." >&2
+  exit 1
+fi
+log "Commit $got"
 
 log "Building (this takes a few minutes on the RK3326) ..."
 make -C "$src" -j"$(nproc)"
