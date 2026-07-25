@@ -135,10 +135,14 @@ Phase 1 is done.
 at startup on the KMSDRM/GBM path and rendering is fine afterwards. Do not chase
 it, and do not "fix" it by setting `use_gpu=false` — the GPU path works.
 
-One real limitation: SDL 2.0.10 on this device does not recognise EVDEV
-keycodes 309/310 (`BTN_TL2`/`BTN_TR2`, i.e. L2/R2), logging "The key you just
-pressed is not recognized by SDL" for each press. Everything else maps. If a
-binding on L2/R2 is ever needed, that is where to look.
+SDL 2.0.10 here logs "The key you just pressed is not recognized by SDL" for
+several EVDEV keycodes — 309 (`BTN_Z`), 310 (`BTN_TL`) and 314 (`BTN_SELECT`)
+have all been seen. This is SDL's *keyboard* layer, not the gamepad layer:
+the pad works through SDL_GameController, which maps fine, so the messages are
+cosmetic. They arrive in bursts at startup and then stop.
+
+(An earlier revision misidentified 309/310 as `BTN_TL2`/`BTN_TR2`. Per
+`linux/input-event-codes.h`, 312/313 are the TL2/TR2 pair.)
 
 ### Dating the headless firmware
 
