@@ -27,31 +27,44 @@ so they neither click on trigger nor at a loop point.
 
 ## Getting them onto the M8
 
-Use **USB drive mode**. From the M8's **Project view** there is a `USB_DRIVE`
-option — per the operation manual (v6.5.2), it "Puts M8 into USB drive-mode to
-allow transferring of SD card". The M8 re-enumerates as USB mass storage, and the
-card mounts on whatever host it is plugged into.
+There are two routes, and which applies depends on the firmware version.
 
-Since the Teensy is plugged into the RG351V, the card appears *there*, so the
+### If running firmware 6.5.0 or newer: USB drive mode
+
+`USB Drive mode` was added in **6.5.0** (2026-01-06):
+
+> `- New: USB Drive mode - Accessible via Project screen next to System Settings`
+
+This is available on headless — the `M8HeadlessFirmware` and `M8Firmware`
+changelogs are byte-identical, so headless carries the same feature set.
+
+Because the Teensy is plugged into the RG351V, the card mounts *there*, and the
 samples can be copied across locally. A staged copy lives at
 `/roms/ports/M8/testsamples/` on the device.
 
 1. In m8c, go to the Project view and select `USB_DRIVE`
-2. The serial link drops as the device re-enumerates, so m8c will disconnect —
-   this is expected
-3. On the RG351V the card shows up as `/dev/sd*`; mount it and copy the WAVs
-   into `/Samples` (a subdirectory like `/Samples/TEST` is fine, keeping the
-   full path under 127 characters)
-4. Unmount, take the M8 out of drive mode, relaunch m8c
+2. The serial link drops as the device re-enumerates, so m8c disconnects —
+   expected
+3. On the RG351V the card appears as `/dev/sd*`; mount it and copy the WAVs into
+   `/Samples` (a subdirectory like `/Samples/TEST` is fine, full path under 127
+   characters)
+4. Unmount, leave drive mode, relaunch m8c
 
-Copying them to the RG351V's *own* SD card does nothing — the M8 never reads it.
-They have to land on the card inside the Teensy.
+### If older than 6.5.0: remove the card
 
-> Earlier revisions of this file claimed the microSD had to be physically
-> removed, based on Dirtywave's headless setup doc and on a USB descriptor dump
-> showing only CDC + audio interfaces. Both were misleading: the descriptors show
-> no mass-storage interface because the M8 only presents one *while in drive
-> mode*. Physically removing the card still works, but is not required.
+No `USB_DRIVE` entry in the Project view means the firmware predates 6.5.0 — a
+useful way to date an unknown headless build. Power down, take the microSD out
+of the Teensy, mount it on the Mac, copy into `/Samples`, reinsert.
+
+Copying to the RG351V's *own* SD card does nothing either way — the M8 never
+reads it. The files have to land on the card inside the Teensy.
+
+> This section was wrong twice. It first claimed the card *must* be removed,
+> based on Dirtywave's headless setup doc and a USB descriptor dump showing only
+> CDC + audio — but a device only presents a mass-storage interface while
+> actually in drive mode, so that dump proved nothing. It then claimed
+> `USB_DRIVE` was simply available, quoting the retail manual without checking
+> headless or the version it landed in. The changelog is the authority for both.
 
 ## Regenerating
 

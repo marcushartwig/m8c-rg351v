@@ -140,6 +140,21 @@ keycodes 309/310 (`BTN_TL2`/`BTN_TR2`, i.e. L2/R2), logging "The key you just
 pressed is not recognized by SDL" for each press. Everything else maps. If a
 binding on L2/R2 is ever needed, that is where to look.
 
+### Dating the headless firmware
+
+The M8's firmware version could not be read remotely: USB descriptors do not
+carry it (`bcdDevice 0280` is the Teensy USB stack), m8c never logged its
+`** Hardware info **` line because no `0xFF` system-info packet arrived, and a
+hand-written SLIP probe read zero bytes despite m8c working — so the probe was
+broken, not the device.
+
+What did work is feature-dating. `USB Drive mode` landed in **6.5.0**
+(2026-01-06) and is absent from this unit's Project view, so the installed
+firmware is **older than 6.5.0**. Latest is 6.5.2 C (2026-04-13).
+
+The headless and retail changelogs are byte-identical, so retail release notes
+can be used to date headless builds by which features are present.
+
 ### Running it over SSH for testing
 
 m8c needs DRM master and EmulationStation holds it, so a remote test means
