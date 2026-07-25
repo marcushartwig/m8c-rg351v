@@ -1,0 +1,11 @@
+# On-device build checkout
+ports/M8/.src/
+
+# Built artefacts
+ports/M8/m8c/m8c
+ports/M8/m8c/gamecontrollerdb.txt
+build/out/
+dist/
+*.zip
+
+.DS_Store
