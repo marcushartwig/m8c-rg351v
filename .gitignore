@@ -12,3 +12,6 @@ dist/
 
 # Vendored .debs (fetched by scripts/fetch-deps.sh)
 vendor/
+
+# Third-party firmware download (Dirtywave EULA, not ours to redistribute)
+firmware/
