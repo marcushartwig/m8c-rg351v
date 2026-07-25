@@ -1,7 +1,7 @@
 # On-device build checkout
 ports/M8/.src/
 
-# Built artefacts
+# Built artefacts (prebuilt/ is deliberately tracked - it is the archive)
 ports/M8/m8c/m8c
 ports/M8/m8c/gamecontrollerdb.txt
 build/out/

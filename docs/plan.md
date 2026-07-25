@@ -159,6 +159,46 @@ firmware is **older than 6.5.0**. Latest is 6.5.2 C (2026-04-13).
 The headless and retail changelogs are byte-identical, so retail release notes
 can be used to date headless builds by which features are present.
 
+### Should we move to m8c 2.x?
+
+Assessed 2026-07-25 against v2.2.4. For **this** setup, mostly not — with one
+exception that only became relevant after the firmware update.
+
+**Cost:** v2.0.0 migrated SDL2 → SDL3. The aarch64 tree on ArkOS has SDL2
+2.0.10 and no SDL3, and Ubuntu 19.10's archives are gone, so SDL3 would have to
+be built from source on-device.
+
+**Irrelevant here:** iOS support, x86 AppImage, Nix config, Windows disconnect
+detection, macOS signing. The MIDI/rtmidi backend is explicitly documented as
+*not* working with Headless/Teensy setups. The intermediate-texture fullscreen
+scaling fix targets blurry non-integer scaling; the RG351V is an exact 2×.
+
+**Genuinely useful:** a config UI (v2.2.0) — editing `config.ini` in-app rather
+than over SSH is worth real money on a device with no keyboard; a toggleable
+message console (v2.1.0), useful precisely because launching from ES means no
+terminal; buffer bounds checks in `commands.c` (v2.2.0); async command queue and
+callback-based main loop (v2.0.0).
+
+**The one that matters:** device detection.
+
+```c
+// v1.7.10  src/serial.c:31
+if (usb_vid == 0x16C0 && usb_pid == 0x048A)
+
+// v2.2.4   src/backends/m8_libserialport.c:85
+if (usb_vid == 0x16C0 && (usb_pid == 0x048A || usb_pid == 0x048B))
+```
+
+Firmware 6.5.0 added multichannel USB audio, and m8c v2.2.2 added a second USB
+product id for it, contributed by trash80 (the M8 Headless author). This unit
+currently enumerates as `0x048A`, so v1.7.10 finds it. **Enabling USB AUDIO MODE
+multichannel in the M8's System Settings would very likely make v1.7.10 stop
+detecting the device.**
+
+Practical conclusion: stay on v1.7.10 unless multichannel USB audio or the
+config UI is wanted. If multichannel is enabled and the M8 disappears, that is
+the cause — switch the setting back rather than debugging the client.
+
 ### Launching from EmulationStation
 
 ArkOS lists Ports from `*.sh` found in `/roms/ports/`. The jasonporritt package
