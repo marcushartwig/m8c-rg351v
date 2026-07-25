@@ -74,14 +74,69 @@ references (192 of them) and diffing against every identifier declared in the
 - `SDL_strtokr` — in `usb.c`, whose entire body is `#ifdef USE_LIBUSB`
   (lines 6–363), never defined in the default libserialport build
 
-### The remaining unknown: is there a compiler on the device?
+## Verified on hardware, 2026-07-25
 
-`gcc` cannot be apt-installed either, and hand-resolving build-essential's
-dependency chain from Launchpad is not worth it. If ArkOS does not already ship
-one, phase 1 moves to a **cross-build on the Mac** — Debian Buster arm64
-(glibc 2.28 < the device's 2.30) in Apple's `container`, running natively on the
-M1, using the same vendored headers. This is step 3 of
-[test-plan.md](test-plan.md).
+SSH'd into the actual device. Several assumptions above turned out to be wrong,
+and the outcome is much better than planned.
+
+| | expected | actual |
+| --- | --- | --- |
+| base | Ubuntu 19.10 eoan | **confirmed** — glibc 2.30, kernel 4.4.189, aarch64 |
+| compiler | unknown, feared absent | **gcc 9.2.1**, make 4.2.1, pkg-config, git all present |
+| SDL2 dev | absent, needed vendoring | **already installed** — headers + `sdl2.pc` |
+| SDL2 version (aarch64) | 2.28.2 | **2.0.10** — see below |
+| libserialport dev | absent, needed vendoring | **already installed** — 0.1.1 |
+| video | unclear | SDL2 has **KMSDRM**, no X server, `DISPLAY` empty |
+| `dialout` group | needed adding | `ark` is already a member |
+
+**The SDL2 version claim was wrong.** ArkOS's `install_headers.sh` symlinks
+`libSDL2-2.0.so.0.2800.2`, which I read as "ArkOS ships 2.28.2". It does — but
+in `/usr/lib/arm-linux-gnueabihf`, the **armhf** tree used by 32-bit emulator
+cores. The **aarch64** tree we actually compile against has stock eoan
+**2.0.10**.
+
+That makes the symbol verification above load-bearing rather than academic: we
+compile *and* link against 2.0.10, so "does m8c v1.7.10 use anything newer than
+2.0.10" was exactly the right question. It does not, and the build confirms it.
+
+**The vendored .deb path was not needed on this device**, since the dev packages
+were already installed. It is kept as a fallback for a fresh image, and
+`install_build_tools.sh` now short-circuits when pkg-config is already satisfied.
+
+### Build result
+
+```
+make -j4   →   real 0m9.878s
+```
+
+Clean build, no errors. `usb.c` compiled to an empty object exactly as the
+`#ifdef USE_LIBUSB` analysis predicted. Output: 72712-byte aarch64 PIE
+executable linking `libSDL2-2.0.so.0` and `libserialport.so.0`, all resolved.
+
+Smoke test found the hardware:
+
+```
+INFO: Found 573 game controller mappings
+INFO: Found M8 in /dev/ttyACM0.
+INFO: Opening port.
+INFO: Enabling and resetting M8 display
+```
+
+Installed to `/roms/ports/M8/_m8c/m8c`, replacing a Nov 2022 build (55616 bytes,
+roughly v1.4 era). Previous binary preserved as `m8c.bak-2022`.
+`gamecontrollerdb.txt` also refreshed (261 KB → 507 KB).
+
+**Still untested: actual rendering.** m8c needs DRM master, which
+EmulationStation holds, so it cannot be verified over SSH — it has to be
+launched from the Ports menu on the device.
+
+### Cross-compiling: no longer needed
+
+The concern was that `gcc` cannot be apt-installed and hand-resolving
+build-essential from Launchpad would not be worth it. Moot — the device ships
+gcc 9.2.1, and a full build takes ten seconds. The Mac-side cross-build
+(Debian Buster arm64 in Apple's `container`) is shelved unless a future image
+turns out to lack a toolchain.
 
 ## Phase 1 — v1.7.10, built on-device
 

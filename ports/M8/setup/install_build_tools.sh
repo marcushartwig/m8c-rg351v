@@ -16,6 +16,16 @@ vendor="$here/vendor"
 log() { echo -e "\e[32m$*\e[0m"; }
 err() { echo -e "\e[31m$*\e[0m" >&2; }
 
+# Some ArkOS images already ship the dev packages - the RG351V this was
+# developed against had sdl2 2.0.10 and libserialport 0.1.1 headers present,
+# along with gcc 9.2.1. In that case there is nothing to do.
+if pkg-config --exists sdl2 && pkg-config --exists libserialport; then
+  log "Dev packages already present - nothing to install."
+  log "  sdl2:          $(pkg-config --modversion sdl2)"
+  log "  libserialport: $(pkg-config --modversion libserialport)"
+  exit 0
+fi
+
 if [ ! -d "$vendor" ] || [ -z "$(ls -A "$vendor"/*.deb 2>/dev/null)" ]; then
   err "No vendored .debs found in $vendor"
   err "Run scripts/fetch-deps.sh first (needs network), or copy vendor/ from the Mac."

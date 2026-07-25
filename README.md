@@ -11,8 +11,19 @@ display, so the image is pixel-perfect with no filtering.
 
 ## Status
 
-Phase 1 (m8c **v1.7.10**, SDL2, built on-device) — scaffolded, not yet run on
-hardware. Phase 2 (m8c **v2.2.4** with bundled SDL3, cross-built) — not started.
+Phase 1 (m8c **v1.7.10**, SDL2, built on-device) — **built and installed on
+hardware 2026-07-25.** Compiles in ~10s on the device; the binary finds the M8
+on `/dev/ttyACM0` and opens the port. Rendering is still unverified — that needs
+launching from the Ports menu, since m8c requires DRM master and
+EmulationStation holds it over SSH.
+
+Phase 2 (m8c **v2.2.4** with bundled SDL3) — not started, and harder here than
+on ROCKNIX: the aarch64 SDL2 is stock eoan 2.0.10, so SDL3 would have to be
+built from source.
+
+The device turned out to already have gcc 9.2.1, SDL2 dev and libserialport dev
+installed, so the vendored-`.deb` machinery below was not needed — it is kept as
+a fallback for a fresh image. Verified details in [docs/plan.md](docs/plan.md).
 
 See [docs/plan.md](docs/plan.md) for why it's split this way; the short version
 is that m8c v2.0.0+ requires SDL3, and ArkOS is an Ubuntu 19.10 base that will
