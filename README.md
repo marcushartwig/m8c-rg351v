@@ -15,17 +15,6 @@ Phase 1 (m8c **v1.7.10**, SDL2, built on-device) — **done and confirmed workin
 on hardware 2026-07-25.** Display, audio and controls all verified. Compiles in
 ~10s on the device, replacing a Nov 2022 binary (~v1.4 era).
 
-Phase 2 (m8c **v2.2.4** with bundled SDL3) — not started, and harder here than
-on ROCKNIX: the aarch64 SDL2 is stock eoan 2.0.10, so SDL3 would have to be
-built from source.
-
-The device turned out to already have gcc 9.2.1, SDL2 dev and libserialport dev
-installed, so the vendored-`.deb` machinery below was not needed — it is kept as
-a fallback for a fresh image. Verified details in [docs/plan.md](docs/plan.md).
-
-See [docs/plan.md](docs/plan.md) for why it's split this way; the short version
-is that m8c v2.0.0+ requires SDL3, and ArkOS is an Ubuntu 19.10 base that will
-never have an SDL3 package.
 
 ## Requirements
 
